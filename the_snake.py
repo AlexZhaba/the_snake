@@ -2,6 +2,10 @@ from random import choice, randint
 
 import pygame
 
+from model.game_object import Drawer
+from model.pygame_drawer import PyGameDrawer
+from model.snake import Snake
+
 # Константы для размеров поля и сетки:
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_SIZE = 20
@@ -29,12 +33,6 @@ SNAKE_COLOR = (0, 255, 0)
 # Скорость движения змейки:
 SPEED = 20
 
-# Настройка игрового окна:
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
-
-# Заголовок окна игрового поля:
-pygame.display.set_caption('Змейка')
-
 # Настройка времени:
 clock = pygame.time.Clock()
 
@@ -45,18 +43,24 @@ clock = pygame.time.Clock()
 
 def main():
     # Инициализация PyGame:
-    pygame.init()
+    drawer = PyGameDrawer((SCREEN_WIDTH, SCREEN_HEIGHT), GRID_SIZE)
     # Тут нужно создать экземпляры классов.
-    ...
 
-    # while True:
-    #     clock.tick(SPEED)
+    snake = Snake((5, 5), drawer)
 
-        # Тут опишите основную логику игры.
-        # ...
+    drawer.fill_all_area()
+    while True:
+        clock.tick(SPEED)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+
+        snake.draw()
+        drawer.update_area()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
 
 
