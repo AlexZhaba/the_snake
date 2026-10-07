@@ -1,5 +1,6 @@
+import collections
 from collections import deque
-from typing import override
+from typing import Deque, override
 
 from model.game_object import Drawer, GameObject, Position
 
@@ -17,25 +18,28 @@ type Direction = tuple[int, int]
 
 
 class Snake(GameObject):
-    length: int = 1
-    positions: deque[Position]
     direction: Direction
+    positions: collections.deque[Position]
     old_positions: list[Position]
 
-    def __init__(self, position: Position, drawer: Drawer) -> None:
+    def __init__(self, position: list[Position], drawer: Drawer) -> None:
         super().__init__(position, SNAKE_COLOR_RGB, drawer)
-        # Поскольку надо удалять хвост и добавлять голову, хочется это делать за O(1)
-        # А писать собственную эффективную очередь не хотелось
-        self.positions = deque([position])
         self.direction = RIGHT
         self.old_positions = []
+
+    @property
+    def length(self):
+        return len(self.positions)
 
     def get_head_position(self) -> Position:
         return self.positions[0]
 
-    def move(self) -> None:
-        grid_size_y, grid_size_x = self.drawer.get_grid_size()
-        head = self.positions.pop()
+    def update_direction(self, new_direction: tuple[int, int]) -> None:
+        self.direction = new_direction
+
+    def get_next_move(self):
+        grid_size_x, grid_size_y = self.drawer.get_grid_size()
+        head = self.get_head_position()
 
         # А тут я забил в codex вопрос "как учесть отрицательные числа"
         # И узнал что -1 % 10 -> 9, забавно
@@ -43,9 +47,18 @@ class Snake(GameObject):
             (head[0] + self.direction[0]) % grid_size_x,
             (head[1] + self.direction[1]) % grid_size_y,
         )
+        return (head, (new_head_x, new_head_y))
 
-        self.positions.appendleft((new_head_x, new_head_y))
-        self.old_positions.append(head)
+    def move(self, with_extend: bool = False) -> None:
+        _, new_head = self.get_next_move()
+        self.positions.appendleft(new_head)
+
+        if not with_extend:
+            self.old_positions.append(self.positions.pop())
+
+    def reset(self, new_positions: list[Position]):
+        self.old_positions = list(self.positions.copy())
+        self.positions = deque(new_positions)
 
     @override
     def draw(self) -> None:
@@ -54,3 +67,4 @@ class Snake(GameObject):
 
         for old_position in self.old_positions:
             self.drawer.clear(old_position, SNAKE_BLOCK_SIZE_IN_GRID)
+        self.old_positions = []

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import deque
 from typing import Protocol
 
 type Position = tuple[int, int]
@@ -16,17 +17,27 @@ class Drawer(Protocol):
 
 
 class GameObject(ABC):
-    position: Position
+    positions: deque[Position]
     body_color: BodyColor
     drawer: Drawer
 
     def __init__(
-        self, position: Position, body_color: BodyColor, drawer: Drawer
+        self, positions: list[Position], body_color: BodyColor, drawer: Drawer
     ) -> None:
-        self.position = position
+        # Поскольку надо удалять хвост и добавлять голову, хочется это делать за O(1)
+        # А писать собственную эффективную очередь не хотелось
+        self.positions = deque(positions)
         self.body_color = body_color
         self.drawer = drawer
 
     @abstractmethod
     def draw(self) -> None:
         pass
+
+    def get_positions(self):
+        return self.positions
+
+    def get_intersection_with(self, positions: list[tuple[int, int]]):
+        intersection = set(self.get_positions()) & set(positions)
+
+        return intersection

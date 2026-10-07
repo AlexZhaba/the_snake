@@ -20,7 +20,6 @@ class PyGameDrawer(Drawer):
         pygame.display.set_caption("Змейка")
         self.grid_size = grid_size
         self.coordinates = coordinates
-        print("init")
 
     @override
     def rect(self, position: Position, size: tuple[int, int], color: BodyColor) -> None:
@@ -39,8 +38,8 @@ class PyGameDrawer(Drawer):
     @override
     def clear(self, position: Position, size: tuple[int, int]):
         return self.rect(
-            (position[0] * self.grid_size, position[1] * self.grid_size),
-            (size[0] * self.grid_size, size[1] * self.grid_size),
+            position,
+            size,
             BOARD_BACKGROUND_COLOR,
         )
 
