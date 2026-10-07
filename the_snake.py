@@ -1,7 +1,8 @@
 import pygame
 
 from model.apple import Apple
-from model.game_object import Position
+from model.game_object import GameObject, Position  # noqa: F401
+from model.pygame_drawer import BOARD_BACKGROUND_COLOR  # noqa: F401
 from model.pygame_drawer import PyGameDrawer
 from model.snake import Snake
 
@@ -11,32 +12,21 @@ GRID_SIZE = 20
 GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
 GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
 
-# Направления движения:
 UP = (0, -1)
 DOWN = (0, 1)
 LEFT = (-1, 0)
 RIGHT = (1, 0)
 
-# Цвет фона - черный:
-BOARD_BACKGROUND_COLOR = (0, 0, 0)
-
-# Цвет границы ячейки
 BORDER_COLOR = (93, 216, 228)
 
-# Цвет яблока
-APPLE_COLOR = (255, 0, 0)
-
-# Цвет змейки
-SNAKE_COLOR = (0, 255, 0)
-
-# Скорость движения змейки:
 SPEED = 20
 
 # Настройка времени:
 clock = pygame.time.Clock()
+screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 
-# Тут опишите все классы игры.
+# Кнопка, новое направление и противоположное ему.
 KEY_DIRECTION_MAP = {
     pygame.K_UP: (UP, DOWN),
     pygame.K_DOWN: (DOWN, UP),
@@ -47,10 +37,26 @@ KEY_DIRECTION_MAP = {
 DEFAULT_SNAKE_POSITION: list[Position] = [(GRID_WIDTH // 2, GRID_HEIGHT // 2)]
 
 
+def handle_keys(game_object: Snake) -> None:
+    """Обрабатываем выход и один поворот за кадр."""
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            raise SystemExit
+        elif event.type == pygame.KEYDOWN and event.key in KEY_DIRECTION_MAP:
+            new_direction, opposite_direction = KEY_DIRECTION_MAP[event.key]
+            if game_object.direction != opposite_direction:
+                game_object.update_direction(new_direction)
+                break
+
+
 def main():
+    """Запускаем игру."""
+    global screen
     # Инициализация PyGame:
     drawer = PyGameDrawer((SCREEN_WIDTH, SCREEN_HEIGHT), GRID_SIZE)
-    # Тут нужно создать экземпляры классов.
+    screen = drawer.screen
+    # Создаём змейку и яблоко.
 
     snake = Snake(DEFAULT_SNAKE_POSITION, drawer)
     apple = Apple.create_at_random_place(drawer)
@@ -58,23 +64,23 @@ def main():
     drawer.fill_all_area()
     while True:
         clock.tick(SPEED)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                raise SystemExit
-            elif event.type == pygame.KEYDOWN and event.key in KEY_DIRECTION_MAP:
-                new_direction, opposite_direction = KEY_DIRECTION_MAP[event.key]
-                if snake.direction != opposite_direction:
-                    snake.update_direction(new_direction)
+        handle_keys(snake)
 
         _, next_snake_head_position = snake.get_next_move()
 
-        if len(snake.get_intersection_with([next_snake_head_position])) != 0:
-            snake.reset(DEFAULT_SNAKE_POSITION)
+        intersection_with_apple = next_snake_head_position == apple.position
+        collision_positions = list(snake.get_positions())
+        if not intersection_with_apple:
+            collision_positions.pop()
 
-        intersection_with_apple = False
-        if len(apple.get_intersection_with([next_snake_head_position])) != 0:
-            intersection_with_apple = True
+        if next_snake_head_position in collision_positions:
+            snake.reset(DEFAULT_SNAKE_POSITION)
+            _, next_snake_head_position = snake.get_next_move()
+            intersection_with_apple = (
+                next_snake_head_position == apple.position
+            )
+
+        if intersection_with_apple:
             apple = Apple.create_at_random_place(drawer)
 
         snake.move(with_extend=intersection_with_apple)
