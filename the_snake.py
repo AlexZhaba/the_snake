@@ -4,8 +4,7 @@ import pygame
 
 from model.apple import Apple
 from model.game_object import GameObject, Position
-from model.pygame_drawer import BOARD_BACKGROUND_COLOR
-from model.pygame_drawer import PyGameDrawer
+from model.pygame_drawer import BOARD_BACKGROUND_COLOR, PyGameDrawer
 from model.snake import Snake
 
 # Экспортируем игровые классы и настройки для проверок и других модулей.
