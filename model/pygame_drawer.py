@@ -1,3 +1,5 @@
+"""Отрисовка игры через Pygame."""
+
 from functools import cache
 from typing import override
 
@@ -10,8 +12,10 @@ BOARD_BACKGROUND_COLOR = (0, 0, 0)
 
 
 class PyGameDrawer(Drawer):
-    """Отрисовка поля через Pygame. Здесь просто добавил возможность потенциально поменять drawer чтобы запустить
-    игру в консоли, например.
+    """Отрисовка поля через Pygame.
+
+    Здесь просто добавил возможность потенциально поменять drawer
+    чтобы запустить игру в консоли, например.
     """
 
     screen: Surface
@@ -19,6 +23,7 @@ class PyGameDrawer(Drawer):
     coordinates: tuple[int, int]
 
     def __init__(self, coordinates: tuple[int, int], grid_size: int) -> None:
+        """Создаём окно и задаём размер клетки."""
         _ = pygame.init()
         self.screen = pygame.display.set_mode(coordinates, 0, 32)
         pygame.display.set_caption("Змейка")
@@ -26,7 +31,9 @@ class PyGameDrawer(Drawer):
         self.coordinates = coordinates
 
     @override
-    def rect(self, position: Position, size: tuple[int, int], color: BodyColor) -> None:
+    def rect(
+        self, position: Position, size: tuple[int, int], color: BodyColor
+    ) -> None:
         """Переводим клетки в пиксели и рисуем прямоугольник."""
         rect = pygame.Rect(
             (position[0] * self.grid_size, position[1] * self.grid_size),

@@ -1,3 +1,5 @@
+"""Игра «Змейка»."""
+
 import pygame
 
 from model.apple import Apple
@@ -39,15 +41,20 @@ DEFAULT_SNAKE_POSITION: list[Position] = [(GRID_WIDTH // 2, GRID_HEIGHT // 2)]
 
 def handle_keys(game_object: Snake) -> None:
     """Обрабатываем выход и один поворот за кадр."""
+    direction_changed = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             raise SystemExit
-        elif event.type == pygame.KEYDOWN and event.key in KEY_DIRECTION_MAP:
+        elif (
+            not direction_changed
+            and event.type == pygame.KEYDOWN
+            and event.key in KEY_DIRECTION_MAP
+        ):
             new_direction, opposite_direction = KEY_DIRECTION_MAP[event.key]
             if game_object.direction != opposite_direction:
                 game_object.update_direction(new_direction)
-                break
+                direction_changed = True
 
 
 def main():

@@ -1,3 +1,5 @@
+"""Движение и отрисовка змейки."""
+
 import collections
 from collections import deque
 from typing import override
@@ -29,6 +31,7 @@ class Snake(GameObject):
         position: list[Position] | None = None,
         drawer: Drawer | None = None,
     ) -> None:
+        """Создаём змейку, движущуюся вправо."""
         super().__init__(position, SNAKE_COLOR_RGB, drawer)
         self.direction = RIGHT
         self.old_positions = []
@@ -71,6 +74,7 @@ class Snake(GameObject):
         """Сбрасываем змейку, старые клетки потом сотрем."""
         self.old_positions = list(self.positions.copy())
         self.positions = deque(new_positions)
+        self.direction = RIGHT
 
     @override
     def draw(self) -> None:

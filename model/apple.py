@@ -1,3 +1,5 @@
+"""Яблоко на игровом поле."""
+
 from random import randint
 from typing import Self, override
 
@@ -12,6 +14,7 @@ class Apple(GameObject):
     def __init__(
         self, position: Position | None = None, drawer: Drawer | None = None
     ) -> None:
+        """Создаём яблоко в заданной или случайной клетке."""
         positions = [position] if position is not None else None
         super().__init__(positions, APPLE_COLOR_RGB, drawer)
         if position is None:
