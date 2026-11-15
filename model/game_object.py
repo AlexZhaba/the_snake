@@ -90,6 +90,4 @@ class GameObject:
         self, positions: list[Position]
     ) -> set[Position]:
         """Проверяем, какие клетки совпали с переданными."""
-        intersection = set(self.get_positions()) & set(positions)
-
-        return intersection
+        return set(self.get_positions()) & set(positions)

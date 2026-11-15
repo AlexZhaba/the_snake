@@ -3,10 +3,19 @@
 import pygame
 
 from model.apple import Apple
-from model.game_object import GameObject, Position  # noqa: F401
-from model.pygame_drawer import BOARD_BACKGROUND_COLOR  # noqa: F401
+from model.game_object import GameObject, Position
+from model.pygame_drawer import BOARD_BACKGROUND_COLOR
 from model.pygame_drawer import PyGameDrawer
 from model.snake import Snake
+
+# Экспортируем игровые классы и настройки для проверок и других модулей.
+__all__ = [
+    'pygame', 'Apple', 'GameObject', 'Position', 'BOARD_BACKGROUND_COLOR',
+    'PyGameDrawer', 'Snake', 'SCREEN_WIDTH', 'SCREEN_HEIGHT', 'GRID_SIZE',
+    'GRID_WIDTH', 'GRID_HEIGHT', 'UP', 'DOWN', 'LEFT', 'RIGHT',
+    'BORDER_COLOR', 'SPEED', 'clock', 'screen', 'KEY_DIRECTION_MAP',
+    'DEFAULT_SNAKE_POSITION', 'handle_keys', 'main',
+]
 
 # Константы для размеров поля и сетки:
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
@@ -97,5 +106,5 @@ def main():
         drawer.update_area()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

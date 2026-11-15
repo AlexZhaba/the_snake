@@ -26,7 +26,7 @@ class PyGameDrawer(Drawer):
         """Создаём окно и задаём размер клетки."""
         _ = pygame.init()
         self.screen = pygame.display.set_mode(coordinates, 0, 32)
-        pygame.display.set_caption("Змейка")
+        pygame.display.set_caption('Змейка')
         self.grid_size = grid_size
         self.coordinates = coordinates
 
