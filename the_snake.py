@@ -1,104 +1,76 @@
-"""Игра «Змейка»."""
+"""Игра «Змейка»"""
 
-import pygame
+import sys
 
+import pygame as pg
+
+from constants import (BOARD_BACKGROUND_COLOR, BORDER_COLOR,
+                       DEFAULT_SNAKE_POSITION, DOWN, GRID_HEIGHT, GRID_SIZE,
+                       GRID_WIDTH, KEY_DIRECTION_MAP, LEFT, RIGHT,
+                       SCREEN_HEIGHT, SCREEN_SIZE, SCREEN_WIDTH, SPEED, UP)
 from model.apple import Apple
-from model.game_object import GameObject, Position
-from model.pygame_drawer import BOARD_BACKGROUND_COLOR, PyGameDrawer
+from model.game_object import GameObject
+from model.pygame_drawer import PyGameDrawer
 from model.snake import Snake
 
-# Экспортируем игровые классы и настройки для проверок и других модулей.
 __all__ = [
-    'pygame', 'Apple', 'GameObject', 'Position', 'BOARD_BACKGROUND_COLOR',
-    'PyGameDrawer', 'Snake', 'SCREEN_WIDTH', 'SCREEN_HEIGHT', 'GRID_SIZE',
-    'GRID_WIDTH', 'GRID_HEIGHT', 'UP', 'DOWN', 'LEFT', 'RIGHT',
-    'BORDER_COLOR', 'SPEED', 'clock', 'screen', 'KEY_DIRECTION_MAP',
-    'DEFAULT_SNAKE_POSITION', 'handle_keys', 'main',
+    'Apple', 'GameObject', 'BOARD_BACKGROUND_COLOR', 'PyGameDrawer', 'Snake',
+    'SCREEN_WIDTH', 'SCREEN_HEIGHT', 'GRID_SIZE', 'GRID_WIDTH', 'GRID_HEIGHT',
+    'UP', 'DOWN', 'LEFT', 'RIGHT', 'BORDER_COLOR', 'SPEED', 'clock', 'screen',
+    'KEY_DIRECTION_MAP', 'DEFAULT_SNAKE_POSITION', 'handle_keys', 'main',
 ]
 
-# Константы для размеров поля и сетки:
-SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
-GRID_SIZE = 20
-GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
-GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
-
-UP = (0, -1)
-DOWN = (0, 1)
-LEFT = (-1, 0)
-RIGHT = (1, 0)
-
-BORDER_COLOR = (93, 216, 228)
-
-SPEED = 20
-
-# Настройка времени:
-clock = pygame.time.Clock()
-screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+clock = pg.time.Clock()
+screen = pg.Surface(SCREEN_SIZE)
 
 
-# Кнопка, новое направление и противоположное ему.
-KEY_DIRECTION_MAP = {
-    pygame.K_UP: (UP, DOWN),
-    pygame.K_DOWN: (DOWN, UP),
-    pygame.K_LEFT: (LEFT, RIGHT),
-    pygame.K_RIGHT: (RIGHT, LEFT),
-}
-
-DEFAULT_SNAKE_POSITION: list[Position] = [(GRID_WIDTH // 2, GRID_HEIGHT // 2)]
-
-
-def handle_keys(game_object: Snake) -> None:
-    """Обрабатываем выход и один поворот за кадр."""
+def handle_keys(snake: Snake) -> None:
+    """Обрабатываем выход и один поворот за кадр"""
     direction_changed = False
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            raise SystemExit
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            pg.quit()
+            sys.exit()
         elif (
             not direction_changed
-            and event.type == pygame.KEYDOWN
+            and event.type == pg.KEYDOWN
             and event.key in KEY_DIRECTION_MAP
         ):
             new_direction, opposite_direction = KEY_DIRECTION_MAP[event.key]
-            if game_object.direction != opposite_direction:
-                game_object.update_direction(new_direction)
+            if snake.direction != opposite_direction:
+                snake.next_direction = new_direction
                 direction_changed = True
 
 
 def main():
-    """Запускаем игру."""
+    """Запускаем игру"""
     global screen
-    # Инициализация PyGame:
-    drawer = PyGameDrawer((SCREEN_WIDTH, SCREEN_HEIGHT), GRID_SIZE)
+    drawer = PyGameDrawer(SCREEN_SIZE, GRID_SIZE)
     screen = drawer.screen
-    # Создаём змейку и яблоко.
-
-    snake = Snake(DEFAULT_SNAKE_POSITION, drawer)
-    apple = Apple.create_at_random_place(drawer)
-
+    snake = Snake(DEFAULT_SNAKE_POSITION, drawer=drawer)
+    apple = Apple(snake.positions, drawer=drawer)
     drawer.fill_all_area()
+
     while True:
         clock.tick(SPEED)
         handle_keys(snake)
+        snake.update_direction()
+        _, next_head = snake.get_next_move()
+        eating = next_head == apple.position
+        body = list(snake.positions)
+        if not eating:
+            body.pop()
 
-        _, next_snake_head_position = snake.get_next_move()
-
-        intersection_with_apple = next_snake_head_position == apple.position
-        collision_positions = list(snake.get_positions())
-        if not intersection_with_apple:
-            collision_positions.pop()
-
-        if next_snake_head_position in collision_positions:
+        if next_head in body:
             snake.reset(DEFAULT_SNAKE_POSITION)
-            _, next_snake_head_position = snake.get_next_move()
-            intersection_with_apple = (
-                next_snake_head_position == apple.position
-            )
-
-        if intersection_with_apple:
-            apple = Apple.create_at_random_place(drawer)
-
-        snake.move(with_extend=intersection_with_apple)
+            if apple.position in snake.positions:
+                apple.randomize_position(snake.positions)
+        else:
+            snake.move(with_extend=eating)
+            if eating:
+                if snake.length == GRID_WIDTH * GRID_HEIGHT:
+                    snake.reset(DEFAULT_SNAKE_POSITION)
+                apple.randomize_position(snake.positions)
 
         snake.draw()
         apple.draw()
